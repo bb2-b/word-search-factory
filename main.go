@@ -1,7 +1,7 @@
 package main
 
 import (
-	board "github.com/bb2-b/word-search-factory/board"
+	board "github.com/bb2-b/word-search-factory/board/board"
 )
 
 func main() {
@@ -11,7 +11,14 @@ func main() {
 		"list",
 		"of",
 		"words",
+		"supercalifragilistic",
+		// "supercalifragilisticexpialidocious",
 	}
 
-	game, err := board.NewGameBoard(words)
+	game, err := board.NewGameBoard(&words)
+	if err != nil {
+		panic(err)
+	}
+
+	game.PrettyPrintGameBoard()
 }
