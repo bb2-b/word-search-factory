@@ -41,7 +41,7 @@ func (g *gameBoard) GetRandomSlot() *Slot {
 	rCol := randomNumInRange(colLen)
 
 	if g.grid[rRow][rCol].filled {
-		fmt.Printf("No way...that slot was already filled! [%d,%d]\n", rRow, rCol)
+		fmt.Printf("That slot was already filled! [%d,%d]\n", rRow, rCol)
 		g.GetRandomSlot()
 	}
 
