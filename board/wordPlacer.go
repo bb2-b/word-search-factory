@@ -2,13 +2,6 @@ package board
 
 import "fmt"
 
-type Anchor struct {
-	slot Slot
-	word string
-}
-
-type direction int
-
 const (
 	upLeft    direction = iota // 0
 	up                         // 1
@@ -19,6 +12,13 @@ const (
 	down                       // 6
 	downRight                  // 7
 )
+
+type direction int
+
+type Anchor struct {
+	slot Slot
+	word string
+}
 
 // String method for direction
 func (d direction) String() string {
@@ -44,9 +44,8 @@ func (d direction) String() string {
 	}
 }
 
-// TODO
-func (g *gameBoard) RandWordVector() direction {
-	return 0
+func (g *gameBoard) RandWordDirection(a Anchor) direction {
+	return direction(RandomNumInRange(8))
 }
 
 func (g *gameBoard) NewAnchor(word string) *Anchor {
@@ -63,9 +62,10 @@ func (g *gameBoard) PickWordAnchor(word string) *Anchor {
 	a.printAnchor()
 
 	// Choose random direction for word to be spelled.
-	// TODO: direction := g.RandWordVector()
+	direction := g.RandWordDirection(*a)
+	fmt.Printf("direction: %v\n", direction.String())
 
-	// Ensure that vector can fit the word.
+	// Ensure that direction can fit the word.
 
 	return nil
 }
