@@ -32,13 +32,13 @@ func (g *gameBoard) GetRandomSlot() *Slot {
 	rowLen := len(g.grid)
 	colLen := len(g.grid[0])
 
-	rRow := RandomNumInRange(rowLen)
-	rCol := RandomNumInRange(colLen)
+	randRow := RandomNumInRange(rowLen)
+	randCol := RandomNumInRange(colLen)
 
-	if g.grid[rRow][rCol].filled {
-		fmt.Printf("That slot was already filled! [%d,%d]\n", rRow, rCol)
+	if g.grid[randRow][randCol].filled {
+		fmt.Printf("slot was already filled! [%d,%d]\n", randRow, randCol)
 		g.GetRandomSlot()
 	}
 
-	return &g.grid[rRow][rCol]
+	return &g.grid[randRow][randCol]
 }

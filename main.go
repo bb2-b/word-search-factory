@@ -9,9 +9,9 @@ func main() {
 	words := []string{
 		"random",
 		"list",
-		"of",
-		"words",
-		"supercalifragilistic",
+		// "of",
+		// "words",
+		// "supercalifragilistic",
 		// "supercalifragilisticexpialidocious",
 	}
 

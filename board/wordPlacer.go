@@ -15,12 +15,13 @@ const (
 
 type direction int
 
-type Anchor struct {
-	slot Slot
-	word string
+type WordVector struct {
+	direction direction
+	slot      Slot
+	word      string
 }
 
-// String method for direction
+// String method for direction.
 func (d direction) String() string {
 	switch d {
 	case upLeft:
@@ -44,32 +45,63 @@ func (d direction) String() string {
 	}
 }
 
-func (g *gameBoard) RandWordDirection(a Anchor) direction {
+func (g *gameBoard) EnsureFit(a WordVector) error {
+	switch a.direction {
+	// Check horizontally (col).
+	case upLeft, left, downLeft:
+		if a.slot.col-len(a.word)-1 < 0 {
+			return fmt.Errorf("word went left off the board")
+		}
+	case upRight, right, downRight:
+		if a.slot.col+len(a.word)-1 > len(g.grid[0]) {
+			return fmt.Errorf("word went right off the board")
+		}
+	// Check vertically (row).
+	case up:
+		if a.slot.row-len(a.word)-1 < 0 {
+			return fmt.Errorf("word went up off the board")
+		}
+	case down:
+		if a.slot.row+len(a.word)-1 > len(g.grid[0]) {
+			return fmt.Errorf("word went down off the board")
+		}
+	}
+
+	return nil
+}
+
+func (g *gameBoard) RandVector(a WordVector) direction {
 	return direction(RandomNumInRange(8))
 }
 
-func (g *gameBoard) NewAnchor(word string) *Anchor {
+func (g *gameBoard) NewWordVector(word string) *WordVector {
 	s := g.GetRandomSlot()
-	return &Anchor{
+	return &WordVector{
 		slot: *s,
 		word: word,
 	}
 }
 
-func (g *gameBoard) PickWordAnchor(word string) *Anchor {
+func (g *gameBoard) PickWordAnchor(w string) *WordVector {
 	// Pick first letter anchor.
-	a := g.NewAnchor(word)
-	a.printAnchor()
+	anchor := g.NewWordVector(w)
+	anchor.printAnchor()
 
-	// Choose random direction for word to be spelled.
-	direction := g.RandWordDirection(*a)
-	fmt.Printf("direction: %v\n", direction.String())
+	// Choose random direction for word to be spelled into.
+	anchor.direction = g.RandVector(*anchor)
+	fmt.Printf("direction: %v\n", anchor.direction.String())
 
 	// Ensure that direction can fit the word.
+	err := g.EnsureFit(*anchor)
+	if err != nil {
+		fmt.Printf("fitment problem: %s\n", err.Error())
+		// Grid has enough slots to ensure infinite recursion cannot happen.
+		g.PickWordAnchor(w)
+	}
 
-	return nil
+	return anchor
 }
 
-func (a *Anchor) printAnchor() {
+func (a *WordVector) printAnchor() {
 	fmt.Printf("[%.2d,%.2d] - '%s'\n", a.slot.row, a.slot.col, a.word)
 }
