@@ -1,6 +1,9 @@
 package board
 
-import "fmt"
+import (
+	"fmt"
+	"math/rand"
+)
 
 const (
 	upLeft    direction = iota // 0
@@ -16,9 +19,80 @@ const (
 type direction int
 
 type WordVector struct {
-	direction direction
-	slot      Slot
 	word      string
+	direction direction
+	anchor    Slot
+}
+
+func (g *gameBoard) PickWordVector(w string) *WordVector {
+	vector := g.newWordVector(w)
+	vector.printAnchor()
+
+	fmt.Printf("direction: %v\n", vector.direction.String())
+
+	// Ensure that direction can fit the word, recurse until the word can fit.
+	err := g.ensureFit(*vector)
+	if err != nil {
+		fmt.Printf("fitment problem: %s\n", err.Error())
+		g.PickWordVector(w)
+	}
+
+	fmt.Printf("returning new vector: %#v\n", vector)
+	return vector
+}
+
+func (g *gameBoard) newWordVector(word string) *WordVector {
+	return &WordVector{
+		word:      word,
+		anchor:    *g.GetRandomSlot(),
+		direction: g.randVector(),
+	}
+}
+
+// TODO: direction generation based on difficulty
+func (g *gameBoard) randVector() direction {
+	return direction(rand.Intn(8))
+}
+
+func (g *gameBoard) ensureFit(anch WordVector) error {
+	horErr := g.ensureFitHorizontal(anch)
+	vertErr := g.ensureFitVertical(anch)
+
+	if horErr != nil || vertErr != nil {
+		return fmt.Errorf("horizontal(%v), vertical(%v)", horErr, vertErr)
+	}
+
+	return nil
+}
+
+func (g *gameBoard) ensureFitHorizontal(v WordVector) error {
+	switch v.direction {
+	case right, upRight, downRight:
+		if v.anchor.col+len(v.word)-1 > len(g.grid[0])-1 {
+			return fmt.Errorf("word went right off the board")
+		}
+	case left, upLeft, downLeft:
+		if v.anchor.col-len(v.word)-1 < 0 {
+			return fmt.Errorf("word went left off the board")
+		}
+	}
+
+	return nil
+}
+
+func (g *gameBoard) ensureFitVertical(v WordVector) error {
+	switch v.direction {
+	case down, downLeft, downRight:
+		if v.anchor.row+len(v.word)-1 > len(g.grid[0])-1 {
+			return fmt.Errorf("word went down off the board")
+		}
+	case up, upLeft, upRight:
+		if v.anchor.row-len(v.word)-1 < 0 {
+			return fmt.Errorf("word went up off the board")
+		}
+	}
+
+	return nil
 }
 
 // String method for direction.
@@ -45,63 +119,6 @@ func (d direction) String() string {
 	}
 }
 
-func (g *gameBoard) EnsureFit(a WordVector) error {
-	switch a.direction {
-	// Check horizontally (col).
-	case upLeft, left, downLeft:
-		if a.slot.col-len(a.word)-1 < 0 {
-			return fmt.Errorf("word went left off the board")
-		}
-	case upRight, right, downRight:
-		if a.slot.col+len(a.word)-1 > len(g.grid[0]) {
-			return fmt.Errorf("word went right off the board")
-		}
-	// Check vertically (row).
-	case up:
-		if a.slot.row-len(a.word)-1 < 0 {
-			return fmt.Errorf("word went up off the board")
-		}
-	case down:
-		if a.slot.row+len(a.word)-1 > len(g.grid[0]) {
-			return fmt.Errorf("word went down off the board")
-		}
-	}
-
-	return nil
-}
-
-func (g *gameBoard) RandVector(a WordVector) direction {
-	return direction(RandomNumInRange(8))
-}
-
-func (g *gameBoard) NewWordVector(word string) *WordVector {
-	s := g.GetRandomSlot()
-	return &WordVector{
-		slot: *s,
-		word: word,
-	}
-}
-
-func (g *gameBoard) PickWordAnchor(w string) *WordVector {
-	// Pick first letter anchor.
-	anchor := g.NewWordVector(w)
-	anchor.printAnchor()
-
-	// Choose random direction for word to be spelled into.
-	anchor.direction = g.RandVector(*anchor)
-	fmt.Printf("direction: %v\n", anchor.direction.String())
-
-	// Ensure that direction can fit the word.
-	err := g.EnsureFit(*anchor)
-	if err != nil {
-		fmt.Printf("fitment problem: %s\n", err.Error())
-		// Grid has enough slots to ensure infinite recursion cannot happen.
-		g.PickWordAnchor(w)
-	}
-
-	return anchor
-}
-
-func (a *WordVector) printAnchor() {
-	fmt.Printf("[%.2d,%.2d] - '%s'\n", a.slot.row, a.slot.col, a.word)
+func (v *WordVector) printAnchor() {
+	fmt.Printf("[r%.2d,c%.2d] - '%s'\n", v.anchor.row, v.anchor.col, v.word)
 }

@@ -8,7 +8,7 @@ func main() {
 
 	words := []string{
 		"random",
-		"list",
+		// "list",
 		// "of",
 		// "words",
 		// "supercalifragilistic",

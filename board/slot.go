@@ -2,6 +2,7 @@ package board
 
 import (
 	"fmt"
+	"math/rand"
 )
 
 type Slot struct {
@@ -11,7 +12,7 @@ type Slot struct {
 	char   byte
 }
 
-func NewSlot(row, col int) *Slot {
+func newSlot(row, col int) *Slot {
 	s := &Slot{
 		filled: false,
 		row:    row,
@@ -23,7 +24,7 @@ func NewSlot(row, col int) *Slot {
 
 func NewSetOfSlots(row, numOfCols int) (s []Slot) {
 	for col := range numOfCols {
-		s = append(s, *NewSlot(row, col))
+		s = append(s, *newSlot(row, col))
 	}
 	return s
 }
@@ -32,8 +33,8 @@ func (g *gameBoard) GetRandomSlot() *Slot {
 	rowLen := len(g.grid)
 	colLen := len(g.grid[0])
 
-	randRow := RandomNumInRange(rowLen)
-	randCol := RandomNumInRange(colLen)
+	randRow := rand.Intn(rowLen)
+	randCol := rand.Intn(colLen)
 
 	if g.grid[randRow][randCol].filled {
 		fmt.Printf("slot was already filled! [%d,%d]\n", randRow, randCol)
