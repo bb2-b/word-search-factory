@@ -1,6 +1,7 @@
 package board
 
 import (
+	"cmp"
 	"fmt"
 	"math/rand"
 )
@@ -58,7 +59,7 @@ func (g *gameBoard) ensureFit(anch WordVector) error {
 	horErr := g.ensureFitHorizontal(anch)
 	vertErr := g.ensureFitVertical(anch)
 
-	if horErr != nil || vertErr != nil {
+	if err := cmp.Or(horErr, vertErr); err != nil {
 		return fmt.Errorf("horizontal(%v), vertical(%v)", horErr, vertErr)
 	}
 
