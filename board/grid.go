@@ -56,13 +56,19 @@ func NewGameBoard(words *[]string) (*gameBoard, error) {
 		vec := game.PickWordVector(word)
 		fmt.Printf("adding word vector to board: %#v\n", vec)
 		game.wordVectors = append(game.wordVectors, vec)
+
+		// Place word into its slots.
+		err = game.PlaceWords()
+		if err != nil {
+			return game, err
+		}
 	}
 
-	// Place words into their slots.
-	err = game.PlaceWords()
-	if err != nil {
-		return game, err
-	}
+	// Pre-check if the words can go into their designated slots without issue.
+	// err = game.PreCheckFit()
+	// if err != nil {
+	// 	return game, err
+	// }
 
 	return game, nil
 }
@@ -100,61 +106,6 @@ func createGrid(length int) [][]Slot {
 	fmt.Printf("created %dx%d grid\n", length, length)
 
 	return grid
-}
-
-func (g *gameBoard) PlaceWords() error {
-	fmt.Printf("word vectors: %s\n", g.wordVectors)
-	for _, vector := range g.wordVectors {
-
-		currChar := vector.anchor
-		for _, char := range vector.word {
-			err := g.slotInPlace(byte(char), currChar)
-			if err != nil {
-				return err
-			}
-			fmt.Printf("vector: %#v\n", vector)
-			switch vector.direction {
-			case upLeft:
-				currChar.row -= 1
-				currChar.col -= 1
-			case up:
-				currChar.row -= 1
-			case upRight:
-				currChar.row -= 1
-				currChar.col += 1
-			case left:
-				currChar.col -= 1
-			case right:
-				currChar.col += 1
-			case downLeft:
-				currChar.row += 1
-				currChar.col -= 1
-			case down:
-				currChar.row += 1
-			case downRight:
-				currChar.col += 1
-				currChar.row += 1
-			default:
-				return fmt.Errorf("something went wrong adjusting the follow-on character direction")
-			}
-		}
-	}
-
-	return nil
-}
-
-func (g *gameBoard) slotInPlace(char byte, slot Slot) error {
-	gSlot := &g.grid[slot.row][slot.col]
-	if !gSlot.filled {
-		gSlot.char = char
-		gSlot.filled = true
-	} else {
-		return fmt.Errorf("slot was already filled")
-	}
-
-	g.PrettyPrintGameBoard()
-	fmt.Printf("\n\n")
-	return nil
 }
 
 func (g *gameBoard) PrettyPrintGameBoard() {

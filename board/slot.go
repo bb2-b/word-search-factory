@@ -43,3 +43,15 @@ func (g *gameBoard) GetRandomSlot() *Slot {
 
 	return &g.grid[randRow][randCol]
 }
+
+type FilledError struct{}
+
+// Error implements the error interface
+func (e *FilledError) Error() string {
+	return fmt.Sprintf("resource '%s' is filled", e)
+}
+
+// NewFilledError creates a new FilledError
+func NewFilledError() *FilledError {
+	return &FilledError{}
+}
