@@ -12,6 +12,8 @@ type Slot struct {
 	char   byte
 }
 
+type FilledError struct{}
+
 func newSlot(row, col int) *Slot {
 	s := &Slot{
 		filled: false,
@@ -44,11 +46,28 @@ func (g *gameBoard) GetRandomSlot() *Slot {
 	return &g.grid[randRow][randCol]
 }
 
-type FilledError struct{}
+func (g *gameBoard) placeChar(char byte, slot Slot) error {
+	gSlot := &g.grid[slot.row][slot.col]
+	if !gSlot.filled {
+		gSlot.char = char
+		gSlot.filled = true
+	} else {
+		// If the designated slot happened to contain the same letter already...
+		if gSlot.char == char {
+			fmt.Printf("coincidental matching letter!!!\n\n")
+			return nil
+		}
+		return fmt.Errorf("slot was already filled with unmatched letter")
+	}
 
-// Error implements the error interface
+	g.PrettyPrintGameBoard()
+	fmt.Printf("\n\n")
+	return nil
+}
+
+// Error implements the error interface.
 func (e *FilledError) Error() string {
-	return fmt.Sprintf("resource '%s' is filled", e)
+	return fmt.Sprintf("resource '%s' is filled", e.Error())
 }
 
 // NewFilledError creates a new FilledError

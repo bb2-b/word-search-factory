@@ -1,7 +1,7 @@
 package main
 
 import (
-	board "github.com/bb2-b/word-search-factory/board/board"
+	board "github.com/bb2-b/word-search-factory/src/board/board"
 )
 
 func main() {
