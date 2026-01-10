@@ -121,16 +121,20 @@ func (g *gameBoard) randomlyFill() {
 	}
 }
 
-func (g *gameBoard) PrettyPrintGameBoard(board [][]Slot) {
+func (g *gameBoard) PrettyPrintGameBoard(board [][]Slot, showCol bool) {
 	fmt.Printf("difficulty: %s\n", g.difficulty.String())
 
-	fmt.Print("  ")
-	for i := range board[0] {
-		fmt.Printf("%-3d", i)
+	if showCol {
+		fmt.Print("  ")
+		for i := range board[0] {
+			fmt.Printf("%-3d", i)
+		}
+		fmt.Println()
 	}
-	fmt.Println()
 	for j, row := range board {
-		fmt.Printf("%-2d", j)
+		if showCol {
+			fmt.Printf("%-2d", j)
+		}
 		for _, slot := range row {
 			fmt.Printf("%-*s", 3, string(slot.char))
 		}

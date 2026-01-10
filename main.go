@@ -26,6 +26,6 @@ func main() {
 		panic(err)
 	}
 
-	game.PrettyPrintGameBoard(game.Grid())
-	game.PrettyPrintGameBoard(game.Key())
+	game.PrettyPrintGameBoard(game.Grid(), false)
+	game.PrettyPrintGameBoard(game.Key(), false)
 }

@@ -21,23 +21,24 @@ func (g *gameBoard) newWordVector(word string) *WordVector {
 
 func (g *gameBoard) PickWordVector(w string) *WordVector {
 	vector := g.newWordVector(w)
-	vector.printAnchor()
 
 	// Ensure that direction can fit the word, recurse until the word can fit.
 	err := g.ensureBoardFitness(vector)
 	if err != nil {
-		vector = g.PickWordVector(w)
+		return g.PickWordVector(w)
 	}
 
 	// Ensure spelling the word into its slots will not have a collision issue.
 	err = g.ensureCollisionFitness(vector)
 	if err != nil {
 		if _, ok := err.(*FilledError); ok {
-			vector = g.PickWordVector(w)
+			return g.PickWordVector(w)
 		} else {
 			panic("collision problem that was not a FilledError")
 		}
 	}
+
+	vector.printAnchor()
 
 	return vector
 }
