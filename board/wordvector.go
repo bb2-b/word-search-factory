@@ -94,31 +94,37 @@ func (g *gameBoard) ensureCollisionFitness(v *WordVector) error {
 		if err != nil {
 			return err
 		}
-		switch v.direction {
-		case upLeft:
-			currSlot.row -= 1
-			currSlot.col -= 1
-		case up:
-			currSlot.row -= 1
-		case upRight:
-			currSlot.row -= 1
-			currSlot.col += 1
-		case left:
-			currSlot.col -= 1
-		case right:
-			currSlot.col += 1
-		case downLeft:
-			currSlot.row += 1
-			currSlot.col -= 1
-		case down:
-			currSlot.row += 1
-		case downRight:
-			currSlot.col += 1
-			currSlot.row += 1
-		}
+		currSlot = updateDirection(v.direction, currSlot)
 	}
 
 	return nil
+}
+
+func updateDirection(d direction, s Slot) Slot {
+	switch d {
+	case upLeft:
+		s.row -= 1
+		s.col -= 1
+	case up:
+		s.row -= 1
+	case upRight:
+		s.row -= 1
+		s.col += 1
+	case left:
+		s.col -= 1
+	case right:
+		s.col += 1
+	case downLeft:
+		s.row += 1
+		s.col -= 1
+	case down:
+		s.row += 1
+	case downRight:
+		s.col += 1
+		s.row += 1
+	}
+
+	return s
 }
 
 func (g *gameBoard) fauxPlaceChar(char byte, slot Slot) *FilledError {

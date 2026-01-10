@@ -13,14 +13,14 @@ func main() {
 		"lorem",
 		"ipsum",
 		"brandon",
-		"boobies",
+		"words",
 		// "supercalifragilistic",
 		// "supercalifragilisticexpialidocious",
 	}
 
-	game, err := board.NewGameBoard(&words, "easy")
+	// game, err := board.NewGameBoard(&words, "easy")
 	// game, err := board.NewGameBoard(&words, "medium")
-	// game, err := board.NewGameBoard(&words, "hard")
+	game, err := board.NewGameBoard(&words, "hard")
 	// game, err := board.NewGameBoard(&words, "extreme")
 	if err != nil {
 		panic(err)

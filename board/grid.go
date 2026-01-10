@@ -6,20 +6,6 @@ import (
 	"strings"
 )
 
-// type GameBoard interface {
-// 	// NewGameBoard returns a new instance of a game board or an error.
-// 	NewGameBoard(words []string) (*gameBoard, error)
-
-// 	// GetGrid returns the grid of a game board.
-// 	Grid() [][]Slot
-
-// 	// GetWordList returns the word list composing a game board.
-// 	WordList() []string
-
-// 	// PrettyPrintGameBoard prints a pretty game board.
-// 	PrettyPrintGameBoard()
-// }
-
 type gameBoard struct {
 	grid        [][]Slot
 	difficulty  difficulty
