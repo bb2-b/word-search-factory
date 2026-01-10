@@ -2,6 +2,8 @@ package board
 
 import (
 	"fmt"
+	"math/rand"
+	"strings"
 )
 
 // type GameBoard interface {
@@ -20,8 +22,10 @@ import (
 
 type gameBoard struct {
 	grid        [][]Slot
+	difficulty  difficulty
 	wordList    []string
 	wordVectors []*WordVector
+	key         [][]Slot
 }
 
 func (g *gameBoard) Grid() [][]Slot {
@@ -32,7 +36,11 @@ func (g *gameBoard) WordList() []string {
 	return g.wordList
 }
 
-func NewGameBoard(words *[]string) (*gameBoard, error) {
+func (g *gameBoard) Key() [][]Slot {
+	return g.key
+}
+
+func NewGameBoard(words *[]string, difficulty string) (*gameBoard, error) {
 	if words == nil {
 		return nil, fmt.Errorf("provided null word list")
 	}
@@ -42,33 +50,31 @@ func NewGameBoard(words *[]string) (*gameBoard, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	grid := createGrid(size)
-
 	game := &gameBoard{
-		grid:        grid,
-		wordList:    *words,
-		wordVectors: nil,
+		grid:       createGrid(size),
+		difficulty: DifficultyStrToInt(difficulty),
+		wordList:   *words,
 	}
 
-	// Generate vector for each word.
+	// Generate vector for each word and place words into its position.
 	for _, word := range game.wordList {
+		word = strings.ToUpper(word)
+
 		vec := game.PickWordVector(word)
-		fmt.Printf("adding word vector to board: %#v\n", vec)
 		game.wordVectors = append(game.wordVectors, vec)
 
-		// Place word into its slots.
+		// Place words into their slots.
 		err = game.PlaceWords()
 		if err != nil {
 			return game, err
 		}
 	}
 
-	// Pre-check if the words can go into their designated slots without issue.
-	// err = game.PreCheckFit()
-	// if err != nil {
-	// 	return game, err
-	// }
+	// Save the game to serve as the answer key.
+	game.deepCopyGrid()
+
+	// Fill the unfilled slots.
+	game.randomlyFill()
 
 	return game, nil
 }
@@ -108,16 +114,39 @@ func createGrid(length int) [][]Slot {
 	return grid
 }
 
-func (g *gameBoard) PrettyPrintGameBoard() {
+func (g *gameBoard) deepCopyGrid() {
+	g.key = make([][]Slot, len(g.grid))
+	for i := range g.grid {
+		g.key[i] = make([]Slot, len(g.grid[i]))
+		copy(g.key[i], g.grid[i])
+	}
+}
+
+func (g *gameBoard) randomlyFill() {
+	charset := "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+	for _, col := range g.grid {
+		for _, slot := range col {
+			if !slot.filled {
+				rChar := charset[rand.Intn(len(charset))]
+				g.placeChar(byte(rChar), slot)
+			}
+		}
+	}
+}
+
+func (g *gameBoard) PrettyPrintGameBoard(board [][]Slot) {
+	fmt.Printf("difficulty: %s\n", g.difficulty.String())
+
 	fmt.Print("  ")
-	for i := range g.grid[0] {
-		fmt.Printf("%-2d", i)
+	for i := range board[0] {
+		fmt.Printf("%-3d", i)
 	}
 	fmt.Println()
-	for j, row := range g.grid {
+	for j, row := range board {
 		fmt.Printf("%-2d", j)
 		for _, slot := range row {
-			fmt.Printf("%-*s", 2, string(slot.char))
+			fmt.Printf("%-*s", 3, string(slot.char))
 		}
 		fmt.Println()
 	}

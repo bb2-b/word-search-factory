@@ -26,57 +26,20 @@ func (g *gameBoard) PickWordVector(w string) *WordVector {
 	// Ensure that direction can fit the word, recurse until the word can fit.
 	err := g.ensureBoardFitness(vector)
 	if err != nil {
-		fmt.Printf("fitment problem: %s\n", err.Error())
 		vector = g.PickWordVector(w)
 	}
 
 	// Ensure spelling the word into its slots will not have a collision issue.
 	err = g.ensureCollisionFitness(vector)
 	if err != nil {
-		fmt.Printf("fitment problem: %s\n", err.Error())
-		vector = g.PickWordVector(w)
-	}
-
-	return vector
-}
-
-func (g *gameBoard) PlaceWords() error {
-	fmt.Printf("word vectors: %+v\n", g.wordVectors)
-	for _, vector := range g.wordVectors {
-		currChar := vector.anchor
-		for _, char := range vector.word {
-			err := g.placeChar(byte(char), currChar)
-			if err != nil {
-				return err
-			}
-			switch vector.direction {
-			case upLeft:
-				currChar.row -= 1
-				currChar.col -= 1
-			case up:
-				currChar.row -= 1
-			case upRight:
-				currChar.row -= 1
-				currChar.col += 1
-			case left:
-				currChar.col -= 1
-			case right:
-				currChar.col += 1
-			case downLeft:
-				currChar.row += 1
-				currChar.col -= 1
-			case down:
-				currChar.row += 1
-			case downRight:
-				currChar.col += 1
-				currChar.row += 1
-			default:
-				return fmt.Errorf("something went wrong adjusting the follow-on character direction")
-			}
+		if _, ok := err.(*FilledError); ok {
+			vector = g.PickWordVector(w)
+		} else {
+			panic("collision problem that was not a FilledError")
 		}
 	}
 
-	return nil
+	return vector
 }
 
 func (g *gameBoard) ensureBoardFitness(vector *WordVector) error {
@@ -125,24 +88,52 @@ func (g *gameBoard) ensureFitVertical(v WordVector) error {
 }
 
 func (g *gameBoard) ensureCollisionFitness(v *WordVector) error {
+	currSlot := v.anchor
+	for _, char := range v.word {
+		err := g.fauxPlaceChar(byte(char), currSlot)
+		if err != nil {
+			return err
+		}
+		switch v.direction {
+		case upLeft:
+			currSlot.row -= 1
+			currSlot.col -= 1
+		case up:
+			currSlot.row -= 1
+		case upRight:
+			currSlot.row -= 1
+			currSlot.col += 1
+		case left:
+			currSlot.col -= 1
+		case right:
+			currSlot.col += 1
+		case downLeft:
+			currSlot.row += 1
+			currSlot.col -= 1
+		case down:
+			currSlot.row += 1
+		case downRight:
+			currSlot.col += 1
+			currSlot.row += 1
+		}
+	}
 
 	return nil
 }
 
-// func (g *gameBoard) fauxPlaceChar(char byte, slot Slot) error {
-// 	gSlot := &g.grid[slot.row][slot.col]
-// 	if !gSlot.filled {
-// 		return nil
-// 	}
+func (g *gameBoard) fauxPlaceChar(char byte, slot Slot) *FilledError {
+	gSlot := &g.grid[slot.row][slot.col]
+	if !gSlot.filled {
+		return nil
+	}
 
-// 	// If the designated slot happened to contain the same letter already...
-// 	if gSlot.char == char {
-// 		fmt.Printf("faux: coincidental matching letter!!!\n\n")
-// 		return nil
-// 	}
+	// If the designated slot happened to contain the same letter already...
+	if gSlot.char == char {
+		return nil
+	}
 
-// 	return NewFilledError()
-// }
+	return NewFilledError(slot)
+}
 
 func (v *WordVector) printAnchor() {
 	fmt.Printf("anchor [r%.2d,c%.2d] (%s) - '%s'\n",

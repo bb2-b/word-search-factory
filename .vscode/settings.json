@@ -1,5 +1,6 @@
 {
     "cSpell.words": [
         "anch"
-    ]
+    ],
+    "go.diagnostic.vulncheck": "Imports"
 }
