@@ -33,7 +33,7 @@ func NewSetOfSlots(row, numOfCols int) (s []Slot) {
 	return s
 }
 
-func (g *gameBoard) GetRandomSlot() *Slot {
+func (g *gameBoard) GetRandomSlot() Slot {
 	rowLen := len(g.grid)
 	colLen := len(g.grid[0])
 
@@ -44,7 +44,7 @@ func (g *gameBoard) GetRandomSlot() *Slot {
 		g.GetRandomSlot()
 	}
 
-	return &g.grid[randRow][randCol]
+	return g.grid[randRow][randCol]
 }
 
 func (g *gameBoard) placeChar(char byte, slot Slot) error {

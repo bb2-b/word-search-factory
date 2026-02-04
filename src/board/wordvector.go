@@ -8,14 +8,14 @@ import (
 type WordVector struct {
 	word      string
 	direction direction
-	anchor    Slot
+	Slot
 }
 
 func (g *gameBoard) newWordVector(word string) *WordVector {
 	return &WordVector{
 		word:      word,
-		anchor:    *g.GetRandomSlot(),
 		direction: g.randVector(),
+		Slot:      g.GetRandomSlot(),
 	}
 }
 
@@ -50,7 +50,6 @@ func (g *gameBoard) ensureBoardFitness(vector *WordVector) error {
 
 	horErr := g.ensureFitHorizontal(*vector)
 	vertErr := g.ensureFitVertical(*vector)
-
 	if err := cmp.Or(horErr, vertErr); err != nil {
 		return fmt.Errorf("horizontal(%v), vertical(%v)", horErr, vertErr)
 	}
@@ -61,11 +60,11 @@ func (g *gameBoard) ensureBoardFitness(vector *WordVector) error {
 func (g *gameBoard) ensureFitHorizontal(v WordVector) error {
 	switch v.direction {
 	case right, upRight, downRight:
-		if v.anchor.col+len(v.word)-1 > len(g.grid[0])-1 {
+		if v.col+len(v.word)-1 > len(g.grid[0])-1 {
 			return fmt.Errorf("word went right off the board")
 		}
 	case left, upLeft, downLeft:
-		if v.anchor.col-len(v.word)-1 < 0 {
+		if v.col-len(v.word)-1 < 0 {
 			return fmt.Errorf("word went left off the board")
 		}
 	}
@@ -76,11 +75,11 @@ func (g *gameBoard) ensureFitHorizontal(v WordVector) error {
 func (g *gameBoard) ensureFitVertical(v WordVector) error {
 	switch v.direction {
 	case down, downLeft, downRight:
-		if v.anchor.row+len(v.word)-1 > len(g.grid[0])-1 {
+		if v.row+len(v.word)-1 > len(g.grid[0])-1 {
 			return fmt.Errorf("word went down off the board")
 		}
 	case up, upLeft, upRight:
-		if v.anchor.row-len(v.word)-1 < 0 {
+		if v.row-len(v.word)-1 < 0 {
 			return fmt.Errorf("word went up off the board")
 		}
 	}
@@ -89,7 +88,7 @@ func (g *gameBoard) ensureFitVertical(v WordVector) error {
 }
 
 func (g *gameBoard) ensureCollisionFitness(v *WordVector) error {
-	currSlot := v.anchor
+	currSlot := v.Slot
 	for _, char := range v.word {
 		err := g.fauxPlaceChar(byte(char), currSlot)
 		if err != nil {
@@ -134,7 +133,7 @@ func (g *gameBoard) fauxPlaceChar(char byte, slot Slot) *FilledError {
 		return nil
 	}
 
-	// If the designated slot happened to contain the same letter already...
+	// If the designated slot just-so-happens to contain the same letter already...
 	if gSlot.char == char {
 		return nil
 	}
@@ -143,6 +142,6 @@ func (g *gameBoard) fauxPlaceChar(char byte, slot Slot) *FilledError {
 }
 
 func (v *WordVector) printAnchor() {
-	fmt.Printf("anchor [r%.2d,c%.2d] (%s) - '%s'\n",
-		v.anchor.row, v.anchor.col, v.direction, v.word)
+	fmt.Printf("%-8s [r%.2d,c%.2d] (%s)\n",
+		v.word, v.row, v.col, v.direction)
 }

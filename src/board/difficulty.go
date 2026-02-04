@@ -19,7 +19,7 @@ func DifficultyStrToInt(diff string) difficulty {
 	case "hard":
 		return difficulty(2)
 	default:
-		fmt.Println("provided unknown difficulty, defaulting to 'hard'")
+		fmt.Printf("provided unknown difficulty, defaulting to '%s'\n", hard)
 		return difficulty(2)
 	}
 }

@@ -26,31 +26,31 @@ func (g *gameBoard) randVector() direction {
 		return direction(rand.Intn(4))
 	case hard:
 		return direction(rand.Intn(8))
+	default:
+		fmt.Println("defaulting to 'hard' difficulty")
+		return direction(rand.Intn(8))
 	}
-
-	fmt.Println("defaulting to 'hard' difficulty")
-	return direction(rand.Intn(8))
 }
 
 // String method for direction.
 func (d direction) String() string {
 	switch d {
 	case upLeft:
-		return "up left"
+		return "up & left"
 	case up:
 		return "up"
 	case upRight:
-		return "up right"
+		return "up & right"
 	case left:
 		return "left"
 	case right:
 		return "right"
 	case downLeft:
-		return "down left"
+		return "down & left"
 	case down:
 		return "down"
 	case downRight:
-		return "down right"
+		return "down & right"
 	default:
 		return fmt.Sprintf("unknown direction (%d)", d)
 	}

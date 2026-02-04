@@ -7,49 +7,55 @@ import (
 )
 
 type gameBoard struct {
+	difficulty
 	grid        [][]Slot
-	difficulty  difficulty
 	wordList    []string
 	wordVectors []*WordVector
 	key         [][]Slot
 }
 
+// Grid returns a 2d slice of slots that contains the instance of a game board
+// at any given time.
 func (g *gameBoard) Grid() [][]Slot {
 	return g.grid
 }
 
+// WordList returns a slice of strings containing the list of words the game
+// board will be built from.
 func (g *gameBoard) WordList() []string {
 	return g.wordList
 }
 
-func (g *gameBoard) Key() [][]Slot {
+// AnswerKey returns a 2d slice of (un-filled) slots with the placed words from
+// the game's word list.
+func (g *gameBoard) AnswerKey() [][]Slot {
 	return g.key
 }
 
-func NewGameBoard(words *[]string, difficulty string) (*gameBoard, error) {
+func NewGameBoard(words []string, difficulty string) (*gameBoard, error) {
 	if words == nil {
 		return nil, fmt.Errorf("provided null word list")
 	}
 
 	// Create empty game.
-	size, err := getMinBoardSize(*words)
+	size, err := getMinBoardSize(words)
 	if err != nil {
 		return nil, err
 	}
 	game := &gameBoard{
 		grid:       createGrid(size),
 		difficulty: DifficultyStrToInt(difficulty),
-		wordList:   *words,
+		wordList:   words,
 	}
 
 	// Generate vector for each word and place words into its position.
 	for _, word := range game.wordList {
 		word = strings.ToUpper(word)
+		word = strings.TrimSpace(word)
 
-		vec := game.PickWordVector(word)
-		game.wordVectors = append(game.wordVectors, vec)
+		game.wordVectors = append(game.wordVectors, game.PickWordVector(word))
 
-		// Place words into their slots.
+		// Place words into their designated slots.
 		err = game.PlaceWords()
 		if err != nil {
 			return game, err
@@ -60,7 +66,7 @@ func NewGameBoard(words *[]string, difficulty string) (*gameBoard, error) {
 	game.deepCopyGrid()
 
 	// Fill the unfilled slots.
-	game.randomlyFill()
+	game.randFill()
 
 	return game, nil
 }
@@ -84,20 +90,33 @@ func getMinBoardSize(words []string) (int, error) {
 	return maxWordLen, nil
 }
 
-// createGrid returns an (n x n) 2d slice of bytes (underscores).
+// createGrid returns an (n x n) 2d slice of bytes comprised of underscores.
 // The size of the board is based on the longest word in the provided list plus
-// the number of remaining words.
+// the number of remaining words, subsequently, ensuring all words can fit on
+// the board.
 func createGrid(length int) [][]Slot {
-	// TODO: choosing board size (see above comment)
 	rows, cols := length, length
 	grid := make([][]Slot, rows)
 	for row := range grid {
 		grid[row] = NewSetOfSlots(row, cols)
 	}
 
-	fmt.Printf("created %dx%d grid\n", length, length)
-
 	return grid
+}
+
+func (g *gameBoard) PlaceWords() error {
+	for _, vector := range g.wordVectors {
+		currSlot := vector.Slot
+		for _, char := range vector.word {
+			err := g.placeChar(byte(char), currSlot)
+			if err != nil {
+				return err
+			}
+			currSlot = updateDirection(vector.direction, currSlot)
+		}
+	}
+
+	return nil
 }
 
 func (g *gameBoard) deepCopyGrid() {
@@ -108,7 +127,7 @@ func (g *gameBoard) deepCopyGrid() {
 	}
 }
 
-func (g *gameBoard) randomlyFill() {
+func (g *gameBoard) randFill() {
 	charset := "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 	for _, col := range g.grid {
@@ -121,10 +140,10 @@ func (g *gameBoard) randomlyFill() {
 	}
 }
 
-func (g *gameBoard) PrettyPrintGameBoard(board [][]Slot, showCol bool) {
+func (g *gameBoard) PrettyPrintGameBoard(board [][]Slot, showCoord bool) {
 	fmt.Printf("difficulty: %s\n", g.difficulty.String())
 
-	if showCol {
+	if showCoord { // corresponds to the board's columns
 		fmt.Print("  ")
 		for i := range board[0] {
 			fmt.Printf("%-3d", i)
@@ -132,7 +151,7 @@ func (g *gameBoard) PrettyPrintGameBoard(board [][]Slot, showCol bool) {
 		fmt.Println()
 	}
 	for j, row := range board {
-		if showCol {
+		if showCoord { // corresponds to the board's rows
 			fmt.Printf("%-2d", j)
 		}
 		for _, slot := range row {
