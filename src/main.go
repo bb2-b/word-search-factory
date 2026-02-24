@@ -40,7 +40,7 @@ func main() {
 }
 
 func getWordsFromFile(file string) (map[string]bool, error) {
-	f, err := os.Open("example-word-lists/" + file)
+	f, err := os.Open(file)
 	if err != nil {
 		return nil, err
 	}
